@@ -14,14 +14,22 @@
     .\mongosh-cosmos.ps1 -Database myapp
 
 .NOTES
-    Requires: az CLI logged in (az login), mongosh must be installed on client.
+    Requires: az CLI logged in (az login), mongosh installed on client.
     In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed.
 #>
 param(
-    [string]$Database = "admin"
+    [string]$Database = "admin",
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$MongoArgs
 )
 
-$Cluster = "<mongodb-clustername>.mongocluster.cosmos.azure.com"
+if ($Database.StartsWith("-")) {
+    # Treat positional CLI switches as mongosh args when -Database is omitted.
+    $MongoArgs = @($Database) + $MongoArgs
+    $Database = "admin"
+}
+
+$Cluster = "<mongodbclustername>.mongocluster.cosmos.azure.com"
 $Uri = "mongodb+srv://$Cluster/${Database}?tls=true&authMechanism=MONGODB-OIDC&authMechanismProperties=ENVIRONMENT:test&retrywrites=false&maxIdleTimeMS=120000"
 
 # Acquire token using the correct scope for Cosmos DB for MongoDB vCore
@@ -42,7 +50,7 @@ $env:OIDC_TOKEN_FILE = $tokenFile
 
 Write-Host "Connecting to $Cluster / $Database ..."
 try {
-    & "mongosh" $Uri --oidcTrustedEndpoint @args
+    & "$PSScriptRoot\mongosh.exe" $Uri --oidcTrustedEndpoint @MongoArgs --quiet --eval
 }
 finally {
     $env:OIDC_TOKEN_FILE = $null
