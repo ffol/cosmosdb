@@ -18,7 +18,7 @@
     .\mongosh-cosmos.ps1 -Cluster docdb-mongo-dev-001 -Database myapp
 
 .NOTES
-     Requires: az CLI logged in (az login), mongosh installed on client.
+    Requires: az CLI logged in (az login), mongosh installed on client.
     In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed.
 #>
 param(
