@@ -15,7 +15,7 @@
 
 .NOTES
     Requires: az CLI logged in (az login), mongosh must be installed on client.
-    In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed
+    In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed.
 #>
 param(
     [string]$Database = "admin"
