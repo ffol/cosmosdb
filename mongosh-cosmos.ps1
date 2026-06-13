@@ -20,7 +20,7 @@ param(
     [string]$Database = "admin"
 )
 
-$Cluster = "docdb-mongo-dev-001.mongocluster.cosmos.azure.com"
+$Cluster = "{mongodb-clustername}.mongocluster.cosmos.azure.com"
 $Uri = "mongodb+srv://$Cluster/${Database}?tls=true&authMechanism=MONGODB-OIDC&authMechanismProperties=ENVIRONMENT:test&retrywrites=false&maxIdleTimeMS=120000"
 
 # Acquire token using the correct scope for Cosmos DB for MongoDB vCore
