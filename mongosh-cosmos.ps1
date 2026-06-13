@@ -6,30 +6,30 @@
     Acquires an Azure access token with the correct scope, writes it to a temp file,
     and launches mongosh using the OIDC workload-identity token-file flow.
 
+.PARAMETER Cluster
+    Cluster name. Accepts either the short name (e.g. "my-cluster") or the full
+    host (e.g. "my-cluster.mongocluster.cosmos.azure.com").
+
 .PARAMETER Database
     Database to connect to (default: admin).
 
 .EXAMPLE
-    .\mongosh-cosmos.ps1
-    .\mongosh-cosmos.ps1 -Database myapp
+    .\mongosh-cosmos.ps1 -Cluster my-cluster
+    .\mongosh-cosmos.ps1 -Cluster my-cluster -Database myapp
 
 .NOTES
-    Requires: az CLI logged in (az login), mongosh installed on client.
-    In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed.
+    Requires: az CLI logged in (az login), mongosh must be installed on client.
+    In case firewall restriction is in place, make sure port 10260 for the mongodb cluster is allowed
 #>
 param(
-    [string]$Database = "admin",
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$MongoArgs
+    [string]$Cluster,
+    [string]$Database = "admin"
 )
 
-if ($Database.StartsWith("-")) {
-    # Treat positional CLI switches as mongosh args when -Database is omitted.
-    $MongoArgs = @($Database) + $MongoArgs
-    $Database = "admin"
+# Expand a bare cluster name to the full FQDN if needed
+if ($Cluster -notmatch '\.mongocluster\.cosmos\.azure\.com$') {
+    $Cluster = "$Cluster.mongocluster.cosmos.azure.com"
 }
-
-$Cluster = "<mongodbclustername>.mongocluster.cosmos.azure.com"
 $Uri = "mongodb+srv://$Cluster/${Database}?tls=true&authMechanism=MONGODB-OIDC&authMechanismProperties=ENVIRONMENT:test&retrywrites=false&maxIdleTimeMS=120000"
 
 # Acquire token using the correct scope for Cosmos DB for MongoDB vCore
@@ -50,7 +50,7 @@ $env:OIDC_TOKEN_FILE = $tokenFile
 
 Write-Host "Connecting to $Cluster / $Database ..."
 try {
-    & "$PSScriptRoot\mongosh.exe" $Uri --oidcTrustedEndpoint @MongoArgs --quiet --eval
+    & "mongosh" $Uri --oidcTrustedEndpoint @args
 }
 finally {
     $env:OIDC_TOKEN_FILE = $null
