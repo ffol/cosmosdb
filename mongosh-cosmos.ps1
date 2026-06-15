@@ -58,7 +58,7 @@ $env:OIDC_TOKEN_FILE = $tokenFile
 
 Write-Host "Connecting to $Cluster / $Database ..."
 try {
-    & "$PSScriptRoot\mongosh.exe" $Uri --oidcTrustedEndpoint @MongoArgs
+    & "mongosh" $Uri --oidcTrustedEndpoint @MongoArgs --quiet --eval
 }
 finally {
     $env:OIDC_TOKEN_FILE = $null
